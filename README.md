@@ -1,19 +1,16 @@
 # Slack Exporter
-Nooj addition, Jan 29, 2022: Fixed a small infinite loop bug.
 
+Forked from:
 
-**Finally got it working again! (Still issues with slack-export-viewer compatibility though.)**
-Implemented Slack's conversations API (since almost all previous API methods in use were...thoroughly deprecated).
-Added threads/replies...(does slow things down) and tweaked sleep to avoid rate limiting (kludge-y, but, should work for now). Added membership info to channels.json and fixed directory naming. 
+https://github.com/chr1spy1/slack-export
 
-Fork history:
-- https://github.com/cowsaysfoo/slack-export 
-- https://github.com/trianglee/slack-export  
-- https://github.com/chr1spy1/slack-export 
-- https://github.com/andriuspetrauskis/slack-export 
-- https://github.com/zach-snell/slack-export 
+Which is forked from:
 
+https://github.com/andriuspetrauskis/slack-export
 
+Original repo can be found here:
+
+https://github.com/zach-snell/slack-export
 
 ## Description
 

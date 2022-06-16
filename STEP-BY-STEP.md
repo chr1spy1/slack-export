@@ -7,7 +7,7 @@
 1. Clone the "slack-export" repo -
 
    ```
-   git clone https://github.com/nooj/slack-export.git
+   git clone https://github.com/trianglee/slack-export.git
    ```
    
 1. Create virtualenv -
@@ -73,11 +73,11 @@
 
 ## Obtain Token and Cookies
 
-1. In a browser with developer tools active, open https://YOUR-SLACK-WORKSPACE.slack.com/customize.
+1. In Firefox, open https://pelioniot.slack.com/customize.
 
 1. Sign in with SSO (if needed).
 
-1. Open Web Developer Tools.  (F12, or right click -> Inspect, etc.)
+1. F12, for Web Developer Tools.
 
 1. Select the "Console" tab.
 
@@ -162,9 +162,7 @@
    ```
    venv/bin/python slack_export.py \
      --token $SLACK_TOKEN --cookie $SLACK_COOKIE \
-     --groups \
      --directMessages \
-     --publicChannels \
      --downloadSlackFiles 
    ```
 
