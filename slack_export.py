@@ -364,8 +364,8 @@ class Users(BaseAPI):
         return self.get('users.info',
                         params={'user': user, 'include_locale': include_locale})
 
-    def list(self, presence=False):
-        return self.get('users.list', params={'presence': int(presence)})
+    def list(self, presence=False, limit=None):
+        return self.get('users.list', params={'presence': int(presence), 'limit': limit})
 
     def identity(self):
         return self.get('users.identity')
@@ -1350,7 +1350,6 @@ def getReplies(channelId, timestamp, pageSize=1000):
 
 
 
-
 # fetches the complete message history for a channel/group/im
 #
 # pageableObject could be:
@@ -1582,6 +1581,29 @@ def promptForDirectMessages(dms):
     selectedDms = pick(dmNames, 'Select the 1:1 DMs you want to export:', multi_select=True)
     return [dms[index] for dmName, index in selectedDms]
 
+def fetchConversations(threads):
+    print("Fetching", len(threads), " specified threads")
+    for convID in threads:
+        print("Fetching specified conversation with ID {0}".format(convID))
+        if not dryRun:
+            channelID, convTS = convID.split("/")[-2:]
+            if convTS.startswith("p"):
+                convTS = convTS[1:11] + "." + convTS[11:]
+            outDir = "threads/{0}".format(convTS)
+            mkdir(outDir)
+
+            response = slack.conversations.history(
+                    channel = channelID,
+                    latest  = convTS,
+                    oldest  = 0,
+                    limit   = 1
+                ).body
+            messages = list(response["messages"])
+            messages.extend(getReplies(channelID, convTS, 1000))
+            print("Fetched {0} replies for conversation from channel: {0} with TS {1}".format(len(messages), channelID, convTS))
+            parseMessages( outDir, messages, "channel" )
+            sleep(1.3)  # Respect the Slack API rate limit
+
 # fetch and write history for all direct message conversations
 # also known as IMs in the slack API.
 def fetchDirectMessages(dms):
@@ -1666,7 +1688,7 @@ def doTestAuth():
 def bootstrapKeyValues():
     global users, channels, groups, dms
      
-    users = slack.users.list().body['members']
+    users = slack.users.list(limit=10).body['members']
     print("Found {0} Users".format(len(users)))
     sleep(3.05)
 
@@ -1850,6 +1872,19 @@ if __name__ == "__main__":
         default=False,
         help="Only export public channels if the user is a member of the channel")
 
+    parser.add_argument(
+        '--skipBootstrap',
+        action='store_true',
+        default=False,
+        help="Skip the bootstrap process to load users and channels")
+
+    parser.add_argument(
+        '--threads',
+        nargs='*',
+        default=None,
+        metavar='threads',
+        help="Export the specific threads only given in the form of channelID/threadTS or full thread URLs")
+
     args = parser.parse_args()
 
     users = []
@@ -1864,7 +1899,8 @@ if __name__ == "__main__":
     testAuth = doTestAuth()
     tokenOwnerId = testAuth['user_id']
 
-    bootstrapKeyValues()
+    if not args.skipBootstrap:
+        bootstrapKeyValues()
 
     dryRun = args.dryRun
     zipName = args.zip
@@ -1907,6 +1943,9 @@ if __name__ == "__main__":
 
     if len(selectedDms) > 0:
         fetchDirectMessages(selectedDms)
+
+    if len(args.threads) > 0:
+        fetchConversations(args.threads)
 
     if args.downloadSlackFiles:
         downloadFiles(token=args.token, cookie_header=cookie_header)
